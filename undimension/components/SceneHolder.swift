@@ -18,6 +18,9 @@ class SceneHolder: ObservableObject {
         self.scnRenderer = scnRenderer
         self.scnView = scnView
         self.frameCaptureManager = FrameCaptureManager(sceneHolder: self)
+        
+        // set default animation
+        addRotationAnimation(x: 0, y: 0, z: CGFloat.pi * 2, duration: 12)
     }
 
     func addRotationAnimation(x: CGFloat, y: CGFloat, z: CGFloat, duration: TimeInterval) {

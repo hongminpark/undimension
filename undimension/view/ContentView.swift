@@ -7,9 +7,7 @@ import AVFoundation
 struct ContentView: View {
     let usdzFile = "Balenciaga_Defender"
     @State private var captureSnapshot = false
-    @State private var record = false
     @StateObject private var sceneHolder = SceneHolder()
-    @State private var frameCaptureManager: FrameCaptureManager?
     @State private var isCapturing = false
 
     @State private var currentTime: CGFloat = 0
@@ -17,6 +15,7 @@ struct ContentView: View {
     @State private var duration: CGFloat = 12
     @State private var timer: Timer?
     @State private var isPlaying = false
+    private let FPS = 60.0
 
     var body: some View {
         VStack {
@@ -25,7 +24,6 @@ struct ContentView: View {
             .padding()
             .cornerRadius(12)
             Button("export") {
-                sceneHolder.addRotationAnimation(x: 0, y: 0, z: CGFloat.pi * 2/4, duration: 2)
                 sceneHolder.exportVideo()
             }
             .padding()
@@ -33,26 +31,22 @@ struct ContentView: View {
             .foregroundColor(.white)
             VStack {
                 Button("Play") {
-                    // Reset the slider to 0
                     isPlaying = true
                     currentTime = 0
-                    sceneHolder.animation = nil
 
                     // Invalidate any existing timer
                     timer?.invalidate()
 
                     // Create a new timer that updates the slider value
-                    timer = Timer.scheduledTimer(withTimeInterval: 1.0/60.0, repeats: true) { _ in
-                        // Update slider value
+                    timer = Timer.scheduledTimer(withTimeInterval: 1.0 / FPS, repeats: true) { _ in
                         if self.currentTime < self.duration {
-                            self.currentTime += CGFloat(1.0/60.0 * self.duration / self.duration)
+                            self.currentTime += CGFloat(1.0 / FPS * self.duration / self.duration)
                             sceneHolder.updateAnimation(self.currentTime)
                         } else {
-                            self.timer?.invalidate() // Invalidate timer when the end is reached
+                            self.timer?.invalidate()
                         }
                     }
 
-                    sceneHolder.addRotationAnimation(x: 0, y: 0, z: CGFloat.pi * 2, duration: CGFloat(self.duration))
                     sceneHolder.applyAnimations()
                 }
                 .padding()
@@ -67,10 +61,10 @@ struct ContentView: View {
                         // Resume the animation
                         sceneHolder.resumeAnimations()
                         // Re-create and schedule the timer
-                        timer = Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true) { _ in
+                        timer = Timer.scheduledTimer(withTimeInterval: 1.0 / FPS, repeats: true) { _ in
                             DispatchQueue.main.async {
                                 if self.currentTime < self.duration {
-                                    self.currentTime += CGFloat(1.0 / 60.0 * self.duration / self.duration)
+                                    self.currentTime += CGFloat(1.0 / FPS * self.duration / self.duration)
                                     sceneHolder.updateAnimation(self.currentTime)
                                 } else {
                                     self.currentTime = self.duration
@@ -114,9 +108,6 @@ struct ContentView: View {
                 .padding()
                 CustomSlider(value: $currentTime, range: 0...duration, step: 0.01)
                     .onChange(of: currentTime) { newValue in
-                        if sceneHolder.animation == nil {
-                            sceneHolder.addRotationAnimation(x: 0, y: 0, z: CGFloat.pi * 2, duration: duration)
-                        }
                         sceneHolder.updateAnimation(newValue)
                     }
                     .padding()
