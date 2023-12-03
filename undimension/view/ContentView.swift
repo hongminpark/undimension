@@ -8,14 +8,7 @@ struct ContentView: View {
     let usdzFile = "Balenciaga_Defender"
     @State private var captureSnapshot = false
     @StateObject private var sceneHolder = SceneHolder()
-    @State private var isCapturing = false
-
-    @State private var currentTime: CGFloat = 0
     @State private var durationText: String = "12"
-    @State private var duration: CGFloat = 12
-    @State private var timer: Timer?
-    @State private var isPlaying = false
-    private let FPS = 60.0
 
     var body: some View {
         VStack {
@@ -23,67 +16,29 @@ struct ContentView: View {
             .frame(height: 300)
             .padding()
             .cornerRadius(12)
-            Button("export") {
-                sceneHolder.exportVideo()
-            }
-            .padding()
-            .background(.black)
-            .foregroundColor(.white)
             VStack {
-                Button("Play") {
-                    isPlaying = true
-                    currentTime = 0
-
-                    // Invalidate any existing timer
-                    timer?.invalidate()
-
-                    // Create a new timer that updates the slider value
-                    timer = Timer.scheduledTimer(withTimeInterval: 1.0 / FPS, repeats: true) { _ in
-                        if self.currentTime < self.duration {
-                            self.currentTime += CGFloat(1.0 / FPS * self.duration / self.duration)
-                            sceneHolder.updateAnimation(self.currentTime)
-                        } else {
-                            self.timer?.invalidate()
-                        }
-                    }
-
-                    sceneHolder.applyAnimations()
+                Button("export") {
+                    sceneHolder.exportVideo()
                 }
                 .padding()
                 .background(.black)
                 .foregroundColor(.white)
-                Button(isPlaying ? "Pause" : "Resume") {
-                    if isPlaying {
-                        timer?.invalidate()
-                        timer = nil
-                        sceneHolder.pauseAnimations()
-                    } else {
-                        // Resume the animation
-                        sceneHolder.resumeAnimations()
-                        // Re-create and schedule the timer
-                        timer = Timer.scheduledTimer(withTimeInterval: 1.0 / FPS, repeats: true) { _ in
-                            DispatchQueue.main.async {
-                                if self.currentTime < self.duration {
-                                    self.currentTime += CGFloat(1.0 / FPS * self.duration / self.duration)
-                                    sceneHolder.updateAnimation(self.currentTime)
-                                } else {
-                                    self.currentTime = self.duration
-                                    self.timer?.invalidate()
-                                    self.timer = nil
-                                }
-                            }
-                        }
-                        
-                        // Add the timer to the current run loop
-                        RunLoop.current.add(self.timer!, forMode: .common)
-                    }
-                    isPlaying.toggle()
-                }
-                .padding()
-                .background(isPlaying ? .black : .gray)
-                .foregroundColor(.white)
+                Button("Play") {
+                     sceneHolder.startAnimation()
+                 }
+                 .padding()
+                 .background(.black)
+                 .foregroundColor(.white)
+
+                 Button(sceneHolder.isPlaying ? "Pause" : "Resume") {
+                     sceneHolder.togglePauseResume()
+                 }
+                 .padding()
+                 .background(sceneHolder.isPlaying ? .black : .gray)
+                 .foregroundColor(.white)
+
                 HStack {
-                    Text("\(currentTime, specifier: "%.f")s")
+                    Text("\(sceneHolder.currentTime, specifier: "%.f")s")
                     Spacer()
                     TextField("Enter text here", text: $durationText)
                         .padding(.vertical, 10)
@@ -95,19 +50,20 @@ struct ContentView: View {
                         .border(Color.gray, width: 1)
                         .onSubmit {
                             if let value = NumberFormatter().number(from: durationText)?.doubleValue {
-                                duration = CGFloat(value)
+                                sceneHolder.duration = CGFloat(value)
                             }
                         }
                         .onChange(of: durationText) { newValue in
                             if let value = NumberFormatter().number(from: newValue)?.doubleValue {
-                                duration = CGFloat(value)
+                                sceneHolder.duration = CGFloat(value)
                             }
                         }
                     Text("s")
                 }
                 .padding()
-                CustomSlider(value: $currentTime, range: 0...duration, step: 0.01)
-                    .onChange(of: currentTime) { newValue in
+                CustomSlider(value: $sceneHolder.currentTime, range: 0...sceneHolder.duration, step: 0.01)
+                    .padding()
+                    .onChange(of: sceneHolder.currentTime) { newValue in
                         sceneHolder.updateAnimation(newValue)
                     }
                     .padding()
@@ -117,40 +73,6 @@ struct ContentView: View {
     }
 }
 
-struct CustomSlider: View {
-    @Binding var value: CGFloat
-    let range: ClosedRange<CGFloat>
-    let step: CGFloat
-    
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .leading) {
-                // The timeline track
-                Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(height: 5)
-                
-                // The timeline progress
-                Rectangle()
-                    .fill(Color.blue)
-                    .frame(width: geometry.size.width * (value - range.lowerBound) / (range.upperBound - range.lowerBound), height: 5)
-                
-                // The draggable indicator
-                Circle()
-                    .fill(Color.white)
-                    .frame(width: 25, height: 25)
-                    .shadow(radius: 2)
-                    .offset(x: geometry.size.width * (value - range.lowerBound) / (range.upperBound - range.lowerBound) - 12.5)
-                    .gesture(DragGesture(minimumDistance: 0).onChanged({ gesture in
-                        let sliderWidth = geometry.size.width
-                        let newValue = (gesture.location.x / sliderWidth) * (range.upperBound - range.lowerBound) + range.lowerBound
-                        value = min(max(newValue, range.lowerBound), range.upperBound)
-                    }))
-            }
-        }
-        .frame(height: 25)
-    }
-}
 #Preview {
     ContentView()
 }
