@@ -16,6 +16,7 @@ class SceneHolder: ObservableObject {
     
     private let FPS = 60.0
     
+    // FIXME - Animation.duration vs self.duration 정리
     func initialize(_ scnView: SCNView) {
         let scnRenderer = SCNRenderer(device: nil, options: nil)
         scnRenderer.scene = scnView.scene

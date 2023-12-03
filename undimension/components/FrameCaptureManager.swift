@@ -7,7 +7,7 @@ import SceneKit
 class FrameCaptureManager {
     private var displayLink: CADisplayLink?
     private var isCapturing = false
-    private var frameCount = 0
+    private var currentFrame = 0
     private var framesDirectory: URL?
     private weak var sceneHolder: SceneHolder?
 
@@ -30,11 +30,11 @@ class FrameCaptureManager {
     @objc private func renderAndCapture() {
         if isCapturing {
             let fps = 60.0
-            guard let scnHolder = self.sceneHolder, let duration = scnHolder.animation?.duration else { return }
-            let frameCount = Int(fps * duration)
+            guard let scnHolder = self.sceneHolder else { return }
+            let frameCount = Int(fps * scnHolder.duration)
 
             for frame in 0...frameCount {
-                let currentTime = (duration / Double(frameCount)) * Double(frame)
+                let currentTime = (scnHolder.duration / Double(frameCount)) * Double(frame)
                 guard let rootNode = scnHolder.scnView?.scene?.rootNode, let scnRenderer = scnHolder.scnRenderer else { return }
                 Animator.updateAnimation(of: rootNode, using: scnHolder.animation!, to: currentTime)
                 let snapshot = scnRenderer.snapshot(atTime: currentTime, with: CGSize(width: 1080, height: 1080), antialiasingMode: .none)
@@ -45,6 +45,7 @@ class FrameCaptureManager {
 
             generateVideoFromImages()
             isCapturing = false
+            currentFrame = 0
         }
     }
     
@@ -63,12 +64,12 @@ class FrameCaptureManager {
     private func saveFrame(data: Data) {
         guard let directory = framesDirectory else { return }
         
-        let fileName = String(format: "frame_%04d.png", frameCount)
+        let fileName = String(format: "frame_%04d.png", currentFrame)
         let fileURL = directory.appendingPathComponent(fileName)
         
         do {
             try data.write(to: fileURL)
-            frameCount += 1
+            currentFrame += 1
         } catch {
             print("Error saving frame: \(error)")
         }
