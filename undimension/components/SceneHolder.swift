@@ -6,9 +6,19 @@ import SwiftUI
 
 class SceneHolder: ObservableObject {
     var animation: Animation?
-    var animator: Animator? // Store the animator
+    var scnRenderer: SCNRenderer?
     @Published var scnView: SCNView?
-    @State private var frameCaptureManager: FrameCaptureManager?
+    private var frameCaptureManager: FrameCaptureManager?
+
+    func initialize(_ scnView: SCNView) {
+        let scnRenderer = SCNRenderer(device: nil, options: nil)
+        scnRenderer.scene = scnView.scene
+        scnRenderer.autoenablesDefaultLighting = true
+        scnRenderer.pointOfView = scnView.pointOfView
+        self.scnRenderer = scnRenderer
+        self.scnView = scnView
+        self.frameCaptureManager = FrameCaptureManager(sceneHolder: self)
+    }
 
     func addRotationAnimation(x: CGFloat, y: CGFloat, z: CGFloat, duration: TimeInterval) {
         let keyframes = [
@@ -20,33 +30,27 @@ class SceneHolder: ObservableObject {
     }
     
     func applyAnimations() {
-        guard let scnView = scnView, let rootNode = scnView.scene?.rootNode else { return }
-        animator = Animator(node: rootNode)
-        animator?.animation = self.animation
-        animator?.applyAnimation()
+        guard let scnView = scnView, let rootNode = scnView.scene?.rootNode, let animation = self.animation else { return }
+        Animator.applyAnimation(to: rootNode, using: animation)
     }
     
     func updateAnimation(_ to: TimeInterval) {
-        guard let scnView = scnView, let rootNode = scnView.scene?.rootNode else { return }
-        animator = Animator(node: rootNode)
-        animator?.animation = self.animation
-        animator?.updateAnimation(to: to)
+        guard let scnView = scnView, let rootNode = scnView.scene?.rootNode, let animation = self.animation else { return }
+        Animator.updateAnimation(of: rootNode, using: animation, to: to)
     }
     
     func pauseAnimations() {
-        animator?.pauseAnimation()
+        guard let scnView = scnView, let rootNode = scnView.scene?.rootNode else { return }
+        Animator.pauseAnimation(for: rootNode)
     }
 
     func resumeAnimations() {
-        animator?.resumeAnimation()
+        guard let scnView = scnView, let rootNode = scnView.scene?.rootNode else { return }
+        Animator.resumeAnimation(for: rootNode)
     }
     
     func exportVideo() {
-        guard let scnView = scnView, let scene = scnView.scene else { return }
-        animator = Animator(node: scene.rootNode)
-        animator?.animation = self.animation
-        let frameCaptureManager = FrameCaptureManager(scene: scene, view: scnView, animator: animator!)
-        frameCaptureManager.startCapture()
+        frameCaptureManager?.startCapture()
     }
     
 }

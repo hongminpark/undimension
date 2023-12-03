@@ -9,18 +9,18 @@ struct SceneKitView: UIViewRepresentable {
     var sceneHolder: SceneHolder
 
     func makeUIView(context: Context) -> SCNView {
-        let sceneView = SCNView()
-        sceneView.autoenablesDefaultLighting = true
-        sceneView.allowsCameraControl = true
-        sceneView.backgroundColor = .clear
+        let scnView = SCNView()
+        scnView.autoenablesDefaultLighting = true
+        scnView.allowsCameraControl = true
+        scnView.backgroundColor = .clear
 
         if let url = Bundle.main.url(forResource: fileName, withExtension: "usdz"),
            let scene = try? SCNScene(url: url, options: nil) {
-            sceneView.scene = scene
-            sceneHolder.scnView = sceneView
+            scnView.scene = scene
         }
-        sceneHolder.scnView = sceneView
-        return sceneView
+        
+        sceneHolder.initialize(scnView)
+        return scnView
     }
     
     func updateUIView(_ uiView: SCNView, context: Context) {

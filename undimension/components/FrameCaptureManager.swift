@@ -5,19 +5,14 @@ import AVFoundation
 import SceneKit
 
 class FrameCaptureManager {
-    private var scnRenderer: SCNRenderer
-    private var animator: Animator
     private var displayLink: CADisplayLink?
     private var isCapturing = false
     private var frameCount = 0
     private var framesDirectory: URL?
+    private weak var sceneHolder: SceneHolder?
 
-    init(scene: SCNScene, view: SCNView, animator: Animator) {
-        self.scnRenderer = SCNRenderer(device: nil, options: nil)
-        self.scnRenderer.scene = scene
-        self.scnRenderer.autoenablesDefaultLighting = true
-        self.scnRenderer.pointOfView = view.pointOfView
-        self.animator = animator
+    init(sceneHolder: SceneHolder) {
+        self.sceneHolder = sceneHolder
     }
 
     func startCapture() {
@@ -26,7 +21,7 @@ class FrameCaptureManager {
         displayLink?.add(to: .current, forMode: .common)
         createFramesDirectory()
     }
-
+    
     func stopCapture() {
         displayLink?.invalidate()
         isCapturing = false
@@ -35,12 +30,13 @@ class FrameCaptureManager {
     @objc private func renderAndCapture() {
         if isCapturing {
             let fps = 60.0
-            guard let duration = animator.animation?.duration else { return }
+            guard let scnHolder = self.sceneHolder, let duration = scnHolder.animation?.duration else { return }
             let frameCount = Int(fps * duration)
 
             for frame in 0...frameCount {
                 let currentTime = (duration / Double(frameCount)) * Double(frame)
-                animator.updateAnimation(to: currentTime)
+                guard let rootNode = scnHolder.scnView?.scene?.rootNode, let scnRenderer = scnHolder.scnRenderer else { return }
+                Animator.updateAnimation(of: rootNode, using: scnHolder.animation!, to: currentTime)
                 let snapshot = scnRenderer.snapshot(atTime: currentTime, with: CGSize(width: 1080, height: 1080), antialiasingMode: .none)
                 if let data = snapshot.pngData() {
                     saveFrame(data: data)
@@ -51,7 +47,7 @@ class FrameCaptureManager {
             isCapturing = false
         }
     }
-
+    
     private func createFramesDirectory() {
         let tempDir = FileManager.default.temporaryDirectory
         let directoryName = UUID().uuidString

@@ -4,16 +4,7 @@ import Foundation
 import SceneKit
 
 class Animator {
-    var animation: Animation?
-    weak var node: SCNNode?
-
-    init(node: SCNNode) {
-        self.node = node
-    }
-
-    func applyAnimation() {
-        guard let animation = animation, let node = node else { return }
-        
+    static func applyAnimation(to node: SCNNode, using animation: Animation) {
         let actions = animation.keyframes.map { keyframe -> SCNAction in
             SCNAction.rotateTo(x: CGFloat(keyframe.rotation.x),
                                y: CGFloat(keyframe.rotation.y),
@@ -25,9 +16,7 @@ class Animator {
         node.runAction(sequence, forKey: "rotationAnimation")
     }
     
-    func updateAnimation(to time: TimeInterval) {
-        guard let animation = animation, let node = node else { return }
-
+    static func updateAnimation(of node: SCNNode, using animation: Animation, to time: TimeInterval) {
         if let firstKeyframe = animation.keyframes.first,
            let lastKeyframe = animation.keyframes.last {
             
@@ -41,15 +30,15 @@ class Animator {
         }
     }
     
-    func pauseAnimation() {
-        node?.isPaused = true
+    static func pauseAnimation(for node: SCNNode) {
+        node.isPaused = true
     }
     
-    func resumeAnimation() {
-        node?.isPaused = false
+    static func resumeAnimation(for node: SCNNode) {
+        node.isPaused = false
     }
 
-    private func interpolate(start: SCNVector4, end: SCNVector4, progress: CGFloat) -> SCNVector4 {
+    private static func interpolate(start: SCNVector4, end: SCNVector4, progress: CGFloat) -> SCNVector4 {
         let floatProgress = Float(progress)  // Convert progress to Float
 
         let deltaX = (end.x - start.x) * floatProgress
