@@ -51,6 +51,7 @@ class FrameCaptureManager {
             isCapturing = false
         }
     }
+
     private func createFramesDirectory() {
         let tempDir = FileManager.default.temporaryDirectory
         let directoryName = UUID().uuidString
@@ -107,4 +108,3 @@ class FrameCaptureManager {
     }
 
 }
-

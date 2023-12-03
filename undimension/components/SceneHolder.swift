@@ -6,6 +6,7 @@ import SwiftUI
 
 class SceneHolder: ObservableObject {
     var animation: Animation?
+    var animator: Animator? // Store the animator
     @Published var scnView: SCNView?
     @State private var frameCaptureManager: FrameCaptureManager?
 
@@ -20,23 +21,32 @@ class SceneHolder: ObservableObject {
     
     func applyAnimations() {
         guard let scnView = scnView, let rootNode = scnView.scene?.rootNode else { return }
-        let animator = Animator(node: rootNode)
-        animator.animation = self.animation
-        animator.applyAnimation()
+        animator = Animator(node: rootNode)
+        animator?.animation = self.animation
+        animator?.applyAnimation()
     }
     
     func updateAnimation(_ to: TimeInterval) {
         guard let scnView = scnView, let rootNode = scnView.scene?.rootNode else { return }
-        let animator = Animator(node: rootNode)
-        animator.animation = self.animation
-        animator.updateAnimation(to: to)
+        animator = Animator(node: rootNode)
+        animator?.animation = self.animation
+        animator?.updateAnimation(to: to)
+    }
+    
+    func pauseAnimations() {
+        animator?.pauseAnimation()
+    }
+
+    func resumeAnimations() {
+        animator?.resumeAnimation()
     }
     
     func exportVideo() {
         guard let scnView = scnView, let scene = scnView.scene else { return }
-        let animator = Animator(node: scene.rootNode)
-        animator.animation = self.animation
-        let frameCaptureManager = FrameCaptureManager(scene: scene, view: scnView, animator: animator)
+        animator = Animator(node: scene.rootNode)
+        animator?.animation = self.animation
+        let frameCaptureManager = FrameCaptureManager(scene: scene, view: scnView, animator: animator!)
         frameCaptureManager.startCapture()
     }
+    
 }

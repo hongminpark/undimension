@@ -122,8 +122,6 @@
 				BF3FF1512B1C74F7009D75F8 /* undimensionApp.swift */,
 				BF3FF1972B1C76A7009D75F8 /* view */,
 				BF3FF1892B1C7523009D75F8 /* Balenciaga_Defender.usdz */,
-				BF3FF19E2B1C7849009D75F8 /* ContentView.swift */,
-				BF3FF1872B1C7523009D75F8 /* FrameCaptureManager.swift */,
 				BF3FF1552B1C74F8009D75F8 /* Assets.xcassets */,
 				BF3FF1572B1C74F8009D75F8 /* Preview Content */,
 			);
@@ -202,6 +200,7 @@
 		BF3FF1922B1C7600009D75F8 /* components */ = {
 			isa = PBXGroup;
 			children = (
+				BF3FF1872B1C7523009D75F8 /* FrameCaptureManager.swift */,
 				BF3FF1932B1C761A009D75F8 /* Animator.swift */,
 				BF3FF1952B1C7680009D75F8 /* SceneHolder.swift */,
 			);
@@ -212,6 +211,7 @@
 			isa = PBXGroup;
 			children = (
 				BF3FF1982B1C76B6009D75F8 /* SceneKitView.swift */,
+				BF3FF19E2B1C7849009D75F8 /* ContentView.swift */,
 			);
 			path = view;
 			sourceTree = "<group>";

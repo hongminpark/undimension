@@ -40,6 +40,14 @@ class Animator {
             node.eulerAngles = SCNVector3(interpolatedRotation.x, interpolatedRotation.y, interpolatedRotation.z)
         }
     }
+    
+    func pauseAnimation() {
+        node?.isPaused = true
+    }
+    
+    func resumeAnimation() {
+        node?.isPaused = false
+    }
 
     private func interpolate(start: SCNVector4, end: SCNVector4, progress: CGFloat) -> SCNVector4 {
         let floatProgress = Float(progress)  // Convert progress to Float
